@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace mvc_angular.Controllers
+namespace App.Controllers
 {
     [Authorize]
     [Route("api/[controller]")]

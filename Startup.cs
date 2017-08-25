@@ -1,17 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using App.Config;
+using App.Models;
+using App.Persistence;
+using App.Services.Security.Extensions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SpaServices.Webpack;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace mvc_angular
+namespace App
 {
     public class Startup
     {
@@ -25,19 +32,17 @@ namespace mvc_angular
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>();
-            services.AddAuthentication()
-                .AddJwtBearer(opt => {
-                    
-                });
-            services.AddAuthorization(auth => {
-                auth.AddPolicy("Bearer", new AuthorizationPolicyBuilder()
-                    .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
-                    .RequireAuthenticatedUser()
-                    .Build());
-                auth.AddPolicy("Admin", p => p.RequireRole("Admin"));
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+            services.Configure<JWTSettings>(Configuration.GetSection("JWTSettings"));
+
+            services.AddDbContext<AppDbContext>(opt => {
+                opt.UseNpgsql(connectionString: Configuration.GetConnectionString("Default"));
             });
+
+            services.AddIdentityService();
+
+            services.AddSecurity(config: Configuration);
 
             services.AddMvc();
         }
@@ -58,20 +63,21 @@ namespace mvc_angular
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            app.Use(async (context, next) => {
+                await next();
+                if (context.Response.StatusCode == 404 &&
+                    !Path.HasExtension(context.Request.Path.Value) &&
+                    !context.Request.Path.Value.StartsWith("/api/")) {
+                        context.Request.Path = "/";
+                        await next();
+                }
+            });
+
             app.UseStaticFiles();
 
             app.UseAuthentication();
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-
-                routes.MapSpaFallbackRoute(
-                    name: "spa-fallback",
-                    defaults: new { controller = "Home", action = "Index" });
-            });
+            app.UseMvcWithDefaultRoute();
         }
     }
 }
