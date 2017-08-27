@@ -14,9 +14,9 @@ namespace App.Services.Security.Extensions
             }).AddJwtBearer(opt => { new CustomBearerOptions() {
                 Audience = config["JWTSettings:Audience"],
                 Authority = config["JWTSettings:Authority"],
-                Issuer = config["JWTSettings:Issuer"],
+                ClaimsIssuer = config["JWTSettings:Issuer"],
                 SecretKey = config["JWTSettings:SecretKey"],
-                RequireHttpsMetadata = false,
+                RequireHttpsMetadata = false
             };});
 
             services.AddAuthorization(auth => {

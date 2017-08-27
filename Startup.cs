@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using App.Config;
 using App.Models;
 using App.Persistence;
+using App.Services.Security;
 using App.Services.Security.Extensions;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -32,8 +33,6 @@ namespace App
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IAuthenticationService, AuthenticationService>();
-
             services.Configure<JWTSettings>(Configuration.GetSection("JWTSettings"));
 
             services.AddDbContext<AppDbContext>(opt => {
@@ -41,6 +40,8 @@ namespace App
             });
 
             services.AddIdentityService();
+
+            services.AddTransient<IAuthenticationService, AuthenticationService>();
 
             services.AddSecurity(config: Configuration);
 

@@ -64,6 +64,7 @@ namespace App.Controllers
         //[Authorize]
         [HttpGet]
         [Route("[action]")]
+        [Authorize]
         public IActionResult Hello()
         {
             return Ok(new ApiResponse(200, "Fucking hello!"));

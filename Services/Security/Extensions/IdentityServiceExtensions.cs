@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using App.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace App.Services.Security.Extensions
 {
@@ -28,6 +31,28 @@ namespace App.Services.Security.Extensions
 
                 // User settings
                 options.User.RequireUniqueEmail = true;
+            });
+
+            services.ConfigureApplicationCookie(opt => 
+            {
+                opt.Events = new CookieAuthenticationEvents 
+                {
+                    OnRedirectToLogin = ctx =>
+                    {
+                        System.Console.WriteLine("redirect ----------------------------->");
+                        if (ctx.Request.Path.StartsWithSegments("/api") &&
+                            ctx.Response.StatusCode == (int) HttpStatusCode.OK)
+                        {
+                            ctx.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                        }
+                        else
+                        {
+                            ctx.Response.Redirect(ctx.RedirectUri);
+                        }
+                        
+                        return Task.FromResult(0);
+                    }
+                };
             });
 
             return services.AddIdentity<ApplicationUser, IdentityRole>()
