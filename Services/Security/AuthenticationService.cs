@@ -91,8 +91,6 @@ namespace App.Services.Security
             // payload.Add("iss", _options.Issuer);
             // payload.Add("aud", _options.Audience);
 
-            System.Console.WriteLine(symmetricKey);
-
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
                 Audience = _options.Audience,
@@ -104,6 +102,8 @@ namespace App.Services.Security
             };
 
             var handler = new JwtSecurityTokenHandler();
+            var token = handler.CreateEncodedJwt(tokenDescriptor);
+            handler.ValidateToken(token,);
             return handler.CreateEncodedJwt(tokenDescriptor);          
             // Issued At, Not Before, Expiration Time
             // payload.Add("iat", ConvertToUnixTimestamp(DateTime.Now));
