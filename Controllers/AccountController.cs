@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using App.Controllers.Resources;
 using App.Models;
@@ -50,12 +51,12 @@ namespace App.Controllers
             if (ModelState.IsValid) {
                 var token = await _authService.SignInUserAsync(credentials);
                     
-                if ((token.AccessToken ?? token.IdToken) != null)
+                if ((token.AccessToken ?? token.IdToken ?? token.Token) != null)
                 {
                     return Ok(new ApiResponse(token, $"User '{token.Username}' logged successfully."));
                 }
 
-                return BadRequest(new ApiResponse(400, "Wrong username or password."));
+                return BadRequest(new ApiResponse(HttpStatusCode.Unauthorized, "Wrong username or password."));
             }
 
             return BadRequest(new ApiResponse(ModelState));

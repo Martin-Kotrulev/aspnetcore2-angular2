@@ -51,45 +51,16 @@ namespace App.Services.Security
 
                 return new TokenResource() {
                     Username = user.UserName ?? user.Email,
-                    AccessToken = GetAccessToken(user.Email),
-                    IdToken = GetIdToken(user)
+                    Token = GetToken()
                 };
             }
 
             return new TokenResource();
         }
 
-        private string GetIdToken(IdentityUser user)
-        {
-            var payload = new Dictionary<string, object>()
-            {
-                { "id", user.Id },
-                { "username", user.UserName },
-                { "sub", user.Email },
-                { "email", user.Email },
-                { "emailConfirmed", user.EmailConfirmed }
-            };
-
-            return GetToken(payload);
-        }
-
-        private string GetAccessToken(string Email)
-        {
-            var payload = new Dictionary<string, object>()
-            {
-                { "sub", Email },
-                { "email", Email }
-            };
-
-            return GetToken(payload);
-        }
-
-        private string GetToken(Dictionary<string, object> payload)
+        private string GetToken(Dictionary<string, object> payload = null)
         {
             var symmetricKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_options.SecretKey));
-
-            // payload.Add("iss", _options.Issuer);
-            // payload.Add("aud", _options.Audience);
 
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
@@ -102,27 +73,8 @@ namespace App.Services.Security
             };
 
             var handler = new JwtSecurityTokenHandler();
-            var token = handler.CreateEncodedJwt(tokenDescriptor);
-            handler.ValidateToken(token,);
-            return handler.CreateEncodedJwt(tokenDescriptor);          
-            // Issued At, Not Before, Expiration Time
-            // payload.Add("iat", ConvertToUnixTimestamp(DateTime.Now));
-            // payload.Add("nbf", ConvertToUnixTimestamp(DateTime.Now));
-            // payload.Add("exp", ConvertToUnixTimestamp(DateTime.Now.AddDays(_options.ExpirationDays)));
 
-            // IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
-            // IJsonSerializer serializer = new JsonNetSerializer();
-            // IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-            // IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-
-            // return encoder.Encode(payload, secret);
-        }
-
-        private static double ConvertToUnixTimestamp(DateTime date)
-        {
-            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            TimeSpan diff = date.ToUniversalTime() - origin;
-            return Math.Floor(diff.TotalSeconds);
+            return handler.CreateEncodedJwt(tokenDescriptor);
         }
   }
 }

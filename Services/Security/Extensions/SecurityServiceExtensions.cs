@@ -20,8 +20,8 @@ namespace App.Services.Security.Extensions
             var tokenValidationParameters = new TokenValidationParameters() 
             {
                 // Signing key validation
-                // ValidateIssuerSigningKey = true,
-                // IssuerSigningKey = signingKey,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = signingKey,
 
                 // Issuer validation
                 ValidateIssuer = true,

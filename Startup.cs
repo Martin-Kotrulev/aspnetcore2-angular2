@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using App.Config;
+using App.Controllers;
 using App.Models;
 using App.Persistence;
 using App.Services.Security;
@@ -18,6 +20,7 @@ using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace App
 {
@@ -51,7 +54,18 @@ namespace App
                 {
                     OnRedirectToLogin = ctx =>
                     {
+                        var res = new ApiResponse((int)401);
+                        var jsonBody = JsonConvert.SerializeObject(res);
+                        System.Console.WriteLine(jsonBody);
+
+                        ctx.Response.ContentType = "application/json";
                         ctx.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                        ctx.Response.Body.WriteAsync(
+                            Encoding.ASCII.GetBytes(jsonBody), 
+                            0, 
+                            Encoding.ASCII.GetByteCount(jsonBody)
+                        );
+
                         return Task.FromResult(0);
                     }
                 };
@@ -85,8 +99,6 @@ namespace App
                         await next();
                 }
             });
-
-            app.UseAuthentication();
 
             app.UseAuthentication();
 
