@@ -43,7 +43,7 @@ namespace App.Controllers
             return BadRequest(new ApiResponse(ModelState));
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] CredentialsResource credentials)
         {

@@ -1,7 +1,9 @@
+using System.Text;
 using App.Config;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace App.Services.Security.Extensions
 {
@@ -9,22 +11,38 @@ namespace App.Services.Security.Extensions
     {
         public static IServiceCollection AddSecurity(this IServiceCollection services, IConfiguration config)
         {
-            services.AddAuthentication(opt => {
-                opt.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(opt => { new CustomBearerOptions() {
-                Audience = config["JWTSettings:Audience"],
-                Authority = config["JWTSettings:Authority"],
-                ClaimsIssuer = config["JWTSettings:Issuer"],
-                SecretKey = config["JWTSettings:SecretKey"],
-                RequireHttpsMetadata = false
-            };});
+            var audience = config["JWTSettings:Audience"];
+            var issuer = config["JWTSettings:Issuer"];
+            var secretKey = config["JWTSettings:SecretKey"];
 
-            services.AddAuthorization(auth => {
-                // auth.AddPolicy("Bearer", new AuthorizationPolicyBuilder()
-                //     .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
-                //     .RequireAuthenticatedUser()
-                //     .Build());
-                // auth.AddPolicy("Admin", p => p.RequireRole("Admin"));
+            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey));
+            
+            var tokenValidationParameters = new TokenValidationParameters() 
+            {
+                // Signing key validation
+                // ValidateIssuerSigningKey = true,
+                // IssuerSigningKey = signingKey,
+
+                // Issuer validation
+                ValidateIssuer = true,
+                ValidIssuer = issuer,
+
+                // Audience validation
+                ValidateAudience = true,
+                ValidAudience = audience,
+                
+                // Lifetime validation
+                ValidateLifetime = true
+            };
+
+            services.AddAuthentication(opt =>
+            {
+                opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(opt =>  
+            {
+                opt.TokenValidationParameters = tokenValidationParameters;
             });
 
             return services;

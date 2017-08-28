@@ -45,6 +45,18 @@ namespace App
 
             services.AddSecurity(config: Configuration);
 
+            services.ConfigureApplicationCookie(opt =>
+            {
+                opt.Events = new CookieAuthenticationEvents()
+                {
+                    OnRedirectToLogin = ctx =>
+                    {
+                        ctx.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                        return Task.FromResult(0);
+                    }
+                };
+            });
+
             services.AddMvc();
         }
 
@@ -74,7 +86,7 @@ namespace App
                 }
             });
 
-            app.UseStaticFiles();
+            app.UseAuthentication();
 
             app.UseAuthentication();
 
