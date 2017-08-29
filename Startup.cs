@@ -54,18 +54,7 @@ namespace App
                 {
                     OnRedirectToLogin = ctx =>
                     {
-                        var res = new ApiResponse((int)401);
-                        var jsonBody = JsonConvert.SerializeObject(res);
-                        System.Console.WriteLine(jsonBody);
-
-                        ctx.Response.ContentType = "application/json";
                         ctx.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-                        ctx.Response.Body.WriteAsync(
-                            Encoding.ASCII.GetBytes(jsonBody), 
-                            0, 
-                            Encoding.ASCII.GetByteCount(jsonBody)
-                        );
-
                         return Task.FromResult(0);
                     }
                 };
@@ -90,6 +79,9 @@ namespace App
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            app.UseStatusCodePages();
+
+            // Redirects not found status back to root if it's not an api call
             app.Use(async (context, next) => {
                 await next();
                 if (context.Response.StatusCode == 404 &&
@@ -99,6 +91,8 @@ namespace App
                         await next();
                 }
             });
+
+            app.UseStaticFiles();
 
             app.UseAuthentication();
 

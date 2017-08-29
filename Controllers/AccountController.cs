@@ -56,19 +56,13 @@ namespace App.Controllers
                     return Ok(new ApiResponse(token, $"User '{token.Username}' logged successfully."));
                 }
 
-                return BadRequest(new ApiResponse(HttpStatusCode.Unauthorized, "Wrong username or password."));
+                return BadRequest(new ApiResponse(
+                    (int)HttpStatusCode.Unauthorized, 
+                    "Wrong username or password.")
+                );
             }
 
             return BadRequest(new ApiResponse(ModelState));
-        }
-
-        //[Authorize]
-        [HttpGet]
-        [Route("[action]")]
-        [Authorize]
-        public IActionResult Hello()
-        {
-            return Ok(new ApiResponse(200, "Fucking hello!"));
         }
     }
 }
